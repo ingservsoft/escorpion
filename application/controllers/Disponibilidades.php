@@ -6,6 +6,7 @@ class Disponibilidades extends Secure_Controller
 {
 	public $diainicio;
 	public $diasatraz;
+	public $seleccionadas;
 	
 	public function __construct()
 	{
@@ -112,6 +113,7 @@ class Disponibilidades extends Secure_Controller
 	}
 	public function cabecera_dias()
 	{
+		$cancha = isset($_GET['tab'])?$_GET['tab']:1;
 	   
 	   $cabeceras=array();
 	   $dias=array("Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado");
@@ -121,7 +123,7 @@ class Disponibilidades extends Secure_Controller
 		   $sumadia=date("Y-m-d",strtotime($this->diainicio."+ ".$i." days"));	
 		   $cabeceras[]=array(
 				"dia"	=>	date("Y-m-d",strtotime($sumadia)),
-				"label"	=>	$dias[date("w",strtotime($sumadia))].'<br />'.date("d",strtotime($sumadia)).' '.$meses[date("n",strtotime($sumadia))-1],
+				"label"	=>	$dias[date("w",strtotime($sumadia))].'<br />'.date("d",strtotime($sumadia)).' '.$meses[date("n",strtotime($sumadia))-1]."<br/><input type='checkbox'  value='".$sumadia."' onchange='seleccionar_dia(this)' />",
 				"diasem" => $dias[date("w",strtotime($sumadia))],
 				);
 	   }
@@ -151,7 +153,7 @@ class Disponibilidades extends Secure_Controller
 	   {
 		   $fila.=$hora=='12:00'?'<tr><td colspan="8">&nbsp;</td></tr>':'';
 		   $fila.='
-		   <tr><th class="hora">'.date("h:i A",strtotime($hora)).'</th>';
+		   <tr id="hora'.date("H",strtotime($hora)).'"><th class="hora">'.date("h:i A",strtotime($hora)).'</th>';
 		   $fechainicio = strtotime($diainicio);
 		   $fechalimite = strtotime($diainicio."+ 6 days");
 		   $dias=$this->cabecera_dias();
@@ -165,7 +167,10 @@ class Disponibilidades extends Secure_Controller
 				{			
 					//carlos chaucanes		
 					if($disp->estado=='DISPONIBLE' && $disp->tarifa_cancha != 0)
-						$fila.='<td class="text-center disponible">
+						$fila.='
+						
+						<td class="text-center disponible">
+						<input type="checkbox" name="seleccionadas" class="fecha_'.explode(" ",$disp->fechahora_inicio)[0].'" value="'.$disp->id_disponibilidad.'"/><br/>
 						DISPONIBLE<br />'.to_currency($disp->tarifa_cancha).'<br />
 						<button class="btn btn-warning btn-xs modal-dlg" data-btn-submit="Reservar" data-href="'.site_url("disponibilidades/reservar/".$disp->id_disponibilidad).'" title="Reservar"><span class="glyphicon glyphicon-check"></span>&nbsp;Reservar</button>						
 						
@@ -229,6 +234,49 @@ class Disponibilidades extends Secure_Controller
 		echo '<tr><td colspan="8" class="text-center">No ha creado tarifas para esta cancha<br /><a href="index.php?page=gestion_cancha&id='.$id_cancha.'">Crear Tarifas</a></td></tr>';
 	
 	}
+
+	public function seleccionarCliente(){
+		/*$disponibilidades = $this->input->get("disponibilidades");
+		$disponibles = json_decode($disponibilidades);*/
+		$data = array();
+		//$data['cantidad'] = count($disponibles); 
+		$this->load->view("disponibilidades/seleccionarcliente", $data);
+	}
+
+
+	public function reservarVarias(){
+		$disponibilidades = $this->input->post("disponibilidades");
+		$disponibles = json_decode($disponibilidades);
+		$cont = 0;
+		$hora = "06";
+		$fechaHora = date('Y-m-d');
+		foreach($disponibles as $dis_id){
+			$datos_disponibilidad=$this->Disponibilidad->get_info($dis_id);
+			$reserva_data = array(
+				'id_disponibilidad' => $datos_disponibilidad->id_disponibilidad,
+				'customer_id' => $this->input->post('person_id'),
+				'employee_id' => $this->Employee->get_logged_in_employee_info()->person_id,
+				'item_id' =>$this->Item->get_info_by_id_or_number($referenciarticulo)->item_id,
+				'fechahora_reserva' =>$datos_disponibilidad->fechahora_inicio,
+				'tarifa_cancha' =>$datos_disponibilidad->tarifa_cancha,
+				'iscontract'=>0
+			);
+
+			$sale_suspend_id=$this->Disponibilidad->guardar_reserva($reserva_data);
+			if($sale_suspend_id){
+				$cont++;
+				if($cont==1){
+					$timestamp = strtotime($datos_disponibilidad->fechahora_inicio);
+					$hora = date('H', $timestamp);
+					$diainicio = $datos_disponibilidad->fechahora_inicio;
+				}
+			}
+		}
+		
+		echo json_encode(array('cantidad_reservadas'=>$cont,'hora'=>$hora,'diainicio'=>$diainicio,'cancha_id'=>$datos_disponibilidad->id_cancha));
+		
+	}
+
 	public function reservar($id_disponibilidad)
 	{
 		$data = array();
@@ -246,6 +294,8 @@ class Disponibilidades extends Secure_Controller
 
 		$this->load->view("disponibilidades/reservar", $data);
 	}
+
+
 	
 	public function guardar_reserva()
 	{
@@ -323,6 +373,7 @@ class Disponibilidades extends Secure_Controller
 			echo json_encode(array('success' => FALSE, 'message' => 'Hubo un error al registrar la reserva', 'id' => -1));
 		}
 	}
+
 
 
 

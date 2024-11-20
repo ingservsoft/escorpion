@@ -26,7 +26,7 @@
 	{
     ?>
 	<li <?php if($cancha->id_cancha==$tab) echo ' class="active"';?> role="presentation">
-		<a data-toggle="tab" href="#cancha-<?php echo $cancha->id_cancha;?>"  class="cancha-<?php echo $cancha->id_cancha;?>"  title="Configuración de <?php echo $cancha->nombre_cancha;?>"><?php echo $cancha->nombre_cancha;?></a>
+		<a data-toggle="tab" onclick="ubicar('<?php echo $diainicio;  ?>','<?php echo $cancha->id_cancha; ?>')" href="#cancha-<?php echo $cancha->id_cancha;?>"  class="cancha-<?php echo $cancha->id_cancha;?>"  title="Configuración de <?php echo $cancha->nombre_cancha;?>"><?php echo $cancha->nombre_cancha;?></a>
 	</li>
     <?php	
 		$i++;
@@ -60,7 +60,16 @@
             </span>
 			Ir a la Fecha
 			<input type="date" id="go_<?php echo $cancha->id_cancha;?>" name="go_<?php echo $cancha->id_cancha;?>" onchange="go_date(<?php echo $cancha->id_cancha;?>)"  value="<?php echo date("Y-m-d",strtotime($diainicio)); ?>"/>
+
           </td>
+		  <tr>
+		  <?php 
+
+				echo anchor(site_url().$controller_name.'/seleccionarCliente', 'Reservar Seleccionadas',array('class'=>'btn btn-sm btn-success pull-right modal-dlg','onclick'=>'validar(event)')); 
+
+			?>
+		  </tr>
+
 		  
 		</tr></table>        
       	  <div class="table-responsive">                    
@@ -97,9 +106,9 @@
 	echo form_close();
 ?>  
 <script type="text/javascript">
+
 $( document ).ready(function() {
 	const tab = document.querySelector('.cancha-'+<?php echo $tab; ?>);
-	console.log(tab);
 	tab.click();
 	cargarDisponibilidad();	
 	dialog_support.init("a.modal-dlg, button.modal-dlg");
@@ -110,7 +119,12 @@ $( document ).ready(function() {
 		$('input[name ="suspended_sale_id"]').val(response.id);
 		$("#unsuspend_reserva").submit();		
 	}
+
 });
+
+
+
+
 
 function reservar(iddisponibilidad)
 {
@@ -141,7 +155,7 @@ function detalles(codigo)
 function cargarDisponibilidad($diainicio){
 	var url="";
 	$("h1.titcancha").each(function(){
-		
+		//alert($(this).attr('id'));
 		$("#contenido_"+$(this).attr('id')).html("");
 		url="<?php echo site_url().$controller_name.'/filasdisponibilidad/';?>"+$(this).attr('id')+"/<?php echo $diainicio;?>";
 		var contenido="";
@@ -166,6 +180,94 @@ function go_date(id_cancha){
 	url +="&tab="+id_cancha;
 	window.location.href = url;
 }
+//funcion para reserbar disponibilidades en bloque de reservas seleccionadas(CarlosCH)
+function reservarDisponibilidades(){
+	const selecected = document.querySelectorAll('input[type="checkbox"][name="seleccionadas"]:checked');
+	if(selecected.length>0){
+		var person = document.getElementById("person_id").value;
+		if(person){
+			const confirmar = confirm("¿ Esta seguro de realizar las reservaciones seleccionadas ?");
+				if(confirmar){
+					const seleccionados = [];
+					selecected.forEach(element => {
+						seleccionados.push(element.value);
+					}); 
+
+					$.ajax({
+					url: '<?php echo site_url().$controller_name.'/reservarVarias';?>', 
+					type: 'post',                   
+					data: {                        
+						disponibilidades: JSON.stringify(seleccionados),
+						person_id:''+person
+					},
+					dataType: 'json',              
+					success: function(response) {
+						//	echo json_encode(array('cantidad_reservadas'=>$cont,'hora'=>$hora,'diainicio'=>$diainicio,'cancha_id'=>$datos_disponibilidad->id_cancha));
+						window.location.reload();  
+					},
+					error: function(xhr, status, error) { 
+						console.log('Error: ' + error);
+					}
+					});
+
+			}
+		}
+		else
+		{
+			alert("No ha seleccionado un cliente");	
+		}
+
+	}
+	else
+	{
+		alert("No se ha seleccionado ninguna reserva");
+	} 
+	
+}
+
+
+
+
+
+function seleccionar_dia(checkbox){
+	const selected = document.querySelectorAll('.fecha_'+checkbox.value);
+	if(checkbox.checked){
+		selected.forEach(element => {
+			if(element.offsetParent!=null){
+				element.checked = true;
+			}
+			
+		});
+	}
+	else
+	{
+		selected.forEach(element => {
+			if(element.offsetParent!=null){
+				element.checked = false;
+			}
+		});
+	}
+
+
+}
+
+function addQueryParam(param, value) {
+  // Obtener la URL actual
+  let url = new URL(window.location.href);
+  
+  // Agregar el parámetro y su valor
+  url.searchParams.set(param, value);
+  
+  // Actualizar la URL sin recargar la página
+  window.history.pushState({}, '', url);
+}
+
+
+function ubicar(fechainicio,id_cancha){
+	addQueryParam('diainicio', fechainicio);
+	addQueryParam('tab', id_cancha);
+}
+
 </script>
 
 <?php $this->load->view("partial/footer"); ?>

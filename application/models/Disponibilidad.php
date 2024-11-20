@@ -220,6 +220,12 @@ class Disponibilidad extends CI_Model
 		return $sale_id;
 	}
 
+
+
+
+	
+	
+
 	public function getContractId(){
 		//obtenemos el id del contrato
 		$contract_data = array("status"=>1);
@@ -330,4 +336,6 @@ class Disponibilidad extends CI_Model
 		$disponibilidad_new = $this->Disponibilidad->get_bydata($fecha_inicio_24, $id_cancha);
 		return array('disponibilidad_new' => $disponibilidad_new, 'fechahora_inicio' => $fecha_inicio_12);
 	}
+
+
 }
