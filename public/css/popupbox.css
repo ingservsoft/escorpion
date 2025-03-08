@@ -14,8 +14,6 @@
 	font-weight: bold;
 }
 
-
-
 #customer_basic_info, #item_basic_info, #item_number_info, #supplier_basic_info, #sale_basic_info, #employee_basic_info, #employee_login_info, #employee_permission_info
 {
 	padding: 5px;

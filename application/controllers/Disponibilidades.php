@@ -22,7 +22,7 @@ class Disponibilidades extends Secure_Controller
 		$this->diainicio=isset($_GET['diainicio'])?$_GET['diainicio']:date("Y-m-d");
 		
 		$data = array();
-		$canchas=$this->Cancha->get_all()->result();
+		$canchas=$this->Cancha->get_all(1000,0,'nombre_cancha','asc')->result();
 		
 		foreach($canchas as $cancha)
 		{
@@ -33,7 +33,7 @@ class Disponibilidades extends Secure_Controller
 		$data['diainicio']=$this->diainicio;
 		$data['mestitulo']=$this->mestitulo();
 		$data['cabecera_dias']=$this->cabecera_dias();
-		$data['tab'] = isset($_GET['tab'])?$_GET['tab']:1;
+		$data['tab'] = isset($_GET['tab'])?$_GET['tab']:4;
 		
 		$this->load->view('disponibilidades/manage', $data);
 	}

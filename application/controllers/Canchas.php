@@ -107,6 +107,19 @@ class Canchas extends Secure_Controller
 			//New id_cancha
 			if($id_cancha == -1)
 			{
+				//-----------------------------
+				$item_data = array(
+					'name' => "Alquiler de ".$this->input->post('nombre_cancha'),
+					'description' => '',
+					'category' => 'CANCHAS',
+					'item_type' => 0,
+					'stock_type' => 1,
+					'item_number' => $this->input->post('referencia_articulo'),
+					'is_serialized'=>0,
+					'allow_alt_description'=>0
+				);
+				$this->Item->save($item_data);
+				//-----------------------------
 				echo json_encode(array('success' => TRUE, 'message' => $this->lang->line('canchas_successful_adding'), 'id' => $cancha_data['id_cancha']));
 			}
 			else // Existing Cancha
@@ -123,6 +136,10 @@ class Canchas extends Secure_Controller
 
 
 	}
+
+
+
+	
 
 	public function delete()
 	{

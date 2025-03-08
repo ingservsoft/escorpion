@@ -17,10 +17,11 @@ class Cancha extends CI_Model
 		return ($this->db->get()->num_rows() == 1);
 	}
 
-	public function get_all($limit = 10000, $offset = 0)
+	public function get_all($limit = 10000, $offset = 0, $sort = 'id_cancha', $order = 'asc')
 	{
 		$this->db->from('canchas');
 		$this->db->where('estado', 1);
+		$this->db->order_by($sort, $order);
 		$this->db->limit($limit);
 		$this->db->offset($offset);
 
@@ -194,12 +195,25 @@ class Cancha extends CI_Model
 				$this->db->where('hora',$hora.":00");
 				$result = $this->db->get()->result()[0];
 				foreach($selected_days as $day){
-					$tarifa_data = array(
-						$day=>$value_fee
-					);
-					$this->db->where('hora',$hora.":00");
-					$this->db->where('id_cancha',$cancha);
-					$this->db->update('tarifascancha',$tarifa_data);
+					if($this->existTarifa($cancha,$hora)){
+						$tarifa_data = array(
+							$day=>$value_fee
+						);
+						$this->db->where('hora',$hora.":00");
+						$this->db->where('id_cancha',$cancha);
+						$this->db->update('tarifascancha',$tarifa_data);
+					}
+					else
+					{
+						$tarifa_data = array(
+							'id_cancha' => $cancha,
+							'hora' => $hora . ":00",
+							$day=>$value_fee
+						);
+						// Insertar el nuevo registro
+						$this->db->insert('tarifascancha', $tarifa_data);
+					}
+
 
 				}
 			}
@@ -213,6 +227,22 @@ class Cancha extends CI_Model
 		return $success;
 	}
 	
+	function existTarifa($cancha,$hora)
+	{
+		$this->db->from('tarifascancha');
+    	$this->db->where('id_cancha', $cancha);
+    	$this->db->where('hora', $hora . ":00");
+    	$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
 	public function search_tarifas($id_cancha=-1,$search='', $rows = 0, $limit_from = 0, $sort = 'id_cancha, hora', $order = 'asc', $count_only = FALSE)
 	{
 		// get_found_rows case

@@ -381,7 +381,7 @@ class Sale_lib
 			//antes
 			//$payment = array($payment_id => array('payment_type' => $payment_id, 'payment_amount' => $payment_amount, 'cash_refund' => 0));
 			
-			$payment = array($payment_id => array('payment_id' => $payment_id, 'payment_type' => $payment_type, 'payment_amount' => $payment_amount, 'payment_time' => $fechapago));
+			$payment = array($payment_id.'~'.$fechapago => array('payment_id' => $payment_id, 'payment_type' => $payment_type, 'payment_amount' => $payment_amount, 'payment_time' => $fechapago));
 			$payments += $payment;
 		//}
 
@@ -981,7 +981,6 @@ class Sale_lib
 
 		$this->empty_cart();
 		$this->remove_customer();
-
 		foreach($this->CI->Sale->get_sale_items_ordered($sale_id)->result() as $row)
 		{
 			$this->add_item($row->item_id, -$row->quantity_purchased, $row->item_location, $row->discount, $row->discount_type, PRICE_MODE_STANDARD, NULL, NULL, $row->item_unit_price, $row->description, $row->serialnumber, NULL, TRUE);
@@ -1017,7 +1016,7 @@ class Sale_lib
 
 		foreach($this->CI->Sale->get_sale_items_ordered($sale_id)->result() as $row)
 		{
-			$this->add_item($row->item_id, $row->quantity_purchased, $row->item_location, $row->discount, $row->discount_type, PRICE_MODE_STANDARD, NULL, NULL, $row->item_unit_price, $row->description, $row->serialnumber, $sale_id, TRUE, $row->print_option);
+			$this->add_item($row->item_id, $row->quantity_purchased, $row->item_location, $row->discount, $row->discount_type, PRICE_MODE_STANDARD, NULL, NULL, $row->item_unit_price, '', $row->serialnumber, $sale_id, TRUE, $row->print_option);
 		}
 
 		foreach($this->CI->Sale->get_sale_payments($sale_id)->result() as $row)

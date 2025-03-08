@@ -2446,7 +2446,7 @@ class CI_Email {
 	public function __destruct()
 	{
 		is_resource($this->_smtp_connect) && $this->_send_command('quit');
-		}
+	}
 
 	// --------------------------------------------------------------------
 

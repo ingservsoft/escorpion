@@ -1,3 +1,0 @@
-mysql 8.2.0
-php 7.4.3.3
-phpmyadmin 5.2.1

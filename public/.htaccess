@@ -1,6 +1,5 @@
 RewriteEngine On
-# RewriteCond %{HTTPS} !=on
-# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
 # To redirect a subdomain to a subdir because of https not supporting wildcards
 # replace values between <> with your ones
 # RewriteCond %{HTTP_HOST} ^<OSPOS subdomain>\.<my web domain>\.com$ [OR]
