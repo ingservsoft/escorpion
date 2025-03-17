@@ -62,7 +62,6 @@
 		?>
 		<div id="employee"><?php echo $this->lang->line('employees_employee').": ".$employee; ?></div>
 	</div>
-
 	<table id="receipt_items">
 		<tr>
 			<th style="width:40%;"><?php echo $this->lang->line('items_item'); ?></th>
